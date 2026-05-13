@@ -17,21 +17,71 @@
 package com.codelab.basiclayouts
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.paddingFromBaseline
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Spa
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.codelab.basiclayouts.ui.theme.MySootheTheme
 
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { MySootheApp() }
+        setContent {
+            val windowSizeClass = calculateWindowSizeClass(this)
+            MySootheApp(windowSizeClass)
+        }
     }
 }
 
@@ -41,30 +91,153 @@ fun SearchBar(
     modifier: Modifier = Modifier
 ) {
     // Implement composable here
+    /**
+     * Modifier 中的修饰符总结：
+     *  fillMaxWidth - 宽度占用父项的所有水平空间
+     *  heightIn - 设置控件的最小高度和最大高度
+     *
+     *
+     *  修饰符的调用顺序会影响显示效果
+     */
+    TextField(
+        value = "",
+        onValueChange = {},
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp),
+        placeholder = {
+            Text(text = stringResource(R.string.placeholder_search))
+        },
+        leadingIcon = {
+            Icon(imageVector = Icons.Default.Search, contentDescription = null)
+        },
+        colors = TextFieldDefaults.colors(
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+            focusedContainerColor = MaterialTheme.colorScheme.surface
+        )
+    )
 }
 
 // Step: Align your body - Alignment
 @Composable
 fun AlignYourBodyElement(
+    @DrawableRes drawable: Int,
+    @StringRes text: Int,
     modifier: Modifier = Modifier
 ) {
     // Implement composable here
+    /**
+     * 如果要对齐父容器中的可组合项，在父容器中设置对齐方式。
+     *  Column 可以决定子项的水平对齐方式
+     *  Row 可以决定子项的垂直对齐方式
+     *  Box 可以决定子项的水平和垂直对齐方式
+     */
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Image(
+            painter = painterResource(drawable),
+            contentDescription = null,
+            modifier = Modifier
+                .size(88.dp)
+                .clip(CircleShape),
+            contentScale = ContentScale.FillBounds
+        )
+        Text(
+            text = stringResource(text),
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.paddingFromBaseline(top = 24.dp, bottom = 8.dp)
+        )
+    }
 }
 
 // Step: Favorite collection card - Material Surface
 @Composable
 fun FavoriteCollectionCard(
+    @DrawableRes drawable: Int,
+    @StringRes text: Int,
     modifier: Modifier = Modifier
 ) {
     // Implement composable here
+    Surface(
+        shape = MaterialTheme.shapes.medium,
+        modifier = modifier,
+        color = MaterialTheme.colorScheme.surfaceVariant
+    ) {
+        Row(
+            modifier = Modifier.width(255.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(drawable),
+                contentDescription = null,
+                modifier = Modifier.size(80.dp),
+                contentScale = ContentScale.FillBounds
+            )
+            Text(
+                text = stringResource(text),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+        }
+    }
 }
 
+/**
+ * 基于槽位的布局会在界面中留出空白区域，让开发者按照自己的意愿来填充
+ */
+@Composable
+fun HomeSection(
+    @StringRes title: Int,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    // Implement composable here
+    Column(modifier = modifier) {
+        Text(
+            text = stringResource(title),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier
+                .paddingFromBaseline(top = 40.dp, bottom = 16.dp)
+                .padding(horizontal = 16.dp)
+        )
+        content()
+    }
+}
 // Step: Align your body row - Arrangements
+
+/**
+ * 对齐方式：用于交叉轴上对齐容器的子项
+ * Column：交叉轴是水平轴
+ * Row：交叉轴是垂直轴
+ *
+ * 决定如何在容器的主轴上放置可组合子项：
+ *  Arrangement：
+ *      EqualWeight
+ *      SpaceBetween
+ *      SpaceAround
+ *      SpaceEvenly
+ *      Top
+ *      Center
+ *      Bottom
+ *
+ *  spacedBy() - 给每个可组合子项添加固定间距
+ */
 @Composable
 fun AlignYourBodyRow(
     modifier: Modifier = Modifier
 ) {
     // Implement composable here
+    LazyRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        items(alignYourBodyData) {
+            AlignYourBodyElement(it.drawable, it.text)
+        }
+    }
 }
 
 // Step: Favorite collections grid - LazyGrid
@@ -73,50 +246,168 @@ fun FavoriteCollectionsGrid(
     modifier: Modifier = Modifier
 ) {
     // Implement composable here
+    LazyHorizontalGrid(
+        rows = GridCells.Fixed(2),
+        modifier = modifier.height(168.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        items(favoriteCollectionsData) {
+            FavoriteCollectionCard(it.drawable, it.text)
+        }
+    }
 }
-
 // Step: Home section - Slot APIs
-@Composable
-fun HomeSection(
-    modifier: Modifier = Modifier
-) {
-    // Implement composable here
-}
 
 // Step: Home screen - Scrolling
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier) {
     // Implement composable here
+    Column(
+        modifier = modifier.verticalScroll(rememberScrollState())
+    ) {
+        Spacer(Modifier.height(16.dp))
+
+        SearchBar(Modifier.padding(horizontal = 16.dp))
+
+        HomeSection(title = R.string.align_your_body) {
+            AlignYourBodyRow()
+        }
+
+        HomeSection(title = R.string.favorite_collections) {
+            FavoriteCollectionsGrid()
+        }
+
+        Spacer(Modifier.height(16.dp))
+    }
 }
 
 // Step: Bottom navigation - Material
 @Composable
 private fun SootheBottomNavigation(modifier: Modifier = Modifier) {
     // Implement composable here
+    /**
+     * 可以使用 Compose Material 库中的 NavigationBar 可组合项。
+     * 在 NavigationBar 可组合项内，您可以添加一个或多个 NavigationBarItem 元素，
+     * 然后 Material 库会自动为其设置样式。
+     */
+    NavigationBar(
+        modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.surfaceVariant
+    ) {
+        NavigationBarItem(
+            icon = {
+                Icon(imageVector = Icons.Default.Spa, contentDescription = null)
+            },
+            label = {
+                Text(
+                    text = stringResource(R.string.bottom_navigation_home)
+                )
+            },
+            selected = true,
+            onClick = {}
+        )
+        NavigationBarItem(
+            icon = {
+                Icon(imageVector = Icons.Default.AccountCircle, contentDescription = null)
+            },
+            label = {
+                Text(
+                    text = stringResource(R.string.bottom_navigation_profile)
+                )
+            },
+            selected = false,
+            onClick = {}
+        )
+    }
 }
 
 // Step: MySoothe App - Scaffold
 @Composable
 fun MySootheAppPortrait() {
     // Implement composable here
+    MySootheTheme {
+        /**
+         * Scaffold 提供了可配置的顶级可组合项。它包含可用于各种 Material 概念的槽位，其中一个就是底部栏。
+         */
+        Scaffold(
+            bottomBar = {
+                SootheBottomNavigation()
+            }
+        ) {
+            HomeScreen(Modifier.padding(it))
+        }
+    }
 }
 
 // Step: Bottom navigation - Material
 @Composable
 private fun SootheNavigationRail(modifier: Modifier = Modifier) {
     // Implement composable here
+    NavigationRail(
+        modifier = modifier.padding(horizontal = 8.dp),
+        containerColor = MaterialTheme.colorScheme.background
+    ) {
+        Column(
+            modifier = Modifier.fillMaxHeight(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            NavigationRailItem(
+                selected = true, onClick = {}, icon = {
+                    Icon(
+                        imageVector = Icons.Default.Spa,
+                        contentDescription = null
+                    )
+                },
+                label = {
+                    Text(
+                        text = stringResource(R.string.bottom_navigation_home)
+                    )
+                }
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            NavigationRailItem(
+                selected = false, onClick = {}, icon = {
+                    Icon(
+                        imageVector = Icons.Default.AccountCircle,
+                        contentDescription = null
+                    )
+                },
+                label = {
+                    Text(
+                        text = stringResource(R.string.bottom_navigation_profile)
+                    )
+                }
+            )
+        }
+    }
 }
 
 // Step: Landscape Mode
 @Composable
-fun MySootheAppLandscape(){
+fun MySootheAppLandscape() {
     // Implement composable here
+    MySootheTheme {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            Row {
+                SootheNavigationRail()
+                HomeScreen()
+            }
+        }
+    }
 }
 
 // Step: MySoothe App
 @Composable
-fun MySootheApp() {
+fun MySootheApp(windowSizeClass: WindowSizeClass) {
     // Implement composable here
+    Log.i("BasicLayouts", windowSizeClass.widthSizeClass.toString())
+    when (windowSizeClass.widthSizeClass) {
+        WindowWidthSizeClass.Compact -> MySootheAppPortrait()
+        WindowWidthSizeClass.Medium -> MySootheAppLandscape()
+    }
 }
 
 private val alignYourBodyData = listOf(
@@ -153,6 +444,7 @@ fun SearchBarPreview() {
 fun AlignYourBodyElementPreview() {
     MySootheTheme {
         AlignYourBodyElement(
+            R.drawable.ab1_inversions, R.string.ab1_inversions,
             modifier = Modifier.padding(8.dp)
         )
     }
@@ -163,6 +455,7 @@ fun AlignYourBodyElementPreview() {
 fun FavoriteCollectionCardPreview() {
     MySootheTheme {
         FavoriteCollectionCard(
+            R.drawable.fc2_nature_meditations, R.string.fc2_nature_meditations,
             modifier = Modifier.padding(8.dp)
         )
     }
@@ -183,10 +476,14 @@ fun AlignYourBodyRowPreview() {
 @Preview(showBackground = true, backgroundColor = 0xFFF5F0EE)
 @Composable
 fun HomeSectionPreview() {
-    MySootheTheme { HomeSection() }
+    MySootheTheme {
+        HomeSection(R.string.align_your_body) {
+            AlignYourBodyRow()
+        }
+    }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFF5F0EE)
+@Preview(showBackground = true, backgroundColor = 0xFFF5F0EE, heightDp = 180)
 @Composable
 fun ScreenContentPreview() {
     MySootheTheme { HomeScreen() }
